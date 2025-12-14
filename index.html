@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DS Roleplay | Join the Action</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Firebase / Database Logic -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, addDoc, onSnapshot, collection, query, serverTimestamp, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Global State
+        window.db = null;
+        window.auth = null;
+        window.userId = "guest-" + Math.floor(Math.random() * 10000); 
+        const REVIEWS_COLLECTION = "serverReviews"; 
+        
+        // --- SETUP ---
+        window.setupReviewListener = (renderCallback) => {
+            if (window.db) {
+                const reviewsRef = collection(window.db, REVIEWS_COLLECTION);
+                const q = query(reviewsRef); 
+                onSnapshot(q, (snapshot) => {
+                    const reviews = [];
+                    snapshot.forEach((doc) => reviews.push({ id: doc.id, ...doc.data() }));
+                    reviews.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
+                    renderCallback(reviews);
+                });
+            } else {
+                const localData = JSON.parse(localStorage.getItem(REVIEWS_COLLECTION) || "[]");
+                renderCallback(localData);
+            }
+        };
+        
+        // --- SUBMIT REVIEW ---
+        window.submitReview = async function() {
+            const nameInput = document.getElementById('reviewName');
+            const contentInput = document.getElementById('reviewContent');
+            const status = document.getElementById('review-status');
+            const btn = document.getElementById('submit-btn');
+            
+            if (nameInput.value.length < 3 || contentInput.value.length < 10) {
+                status.textContent = "Name (3+) and Review (10+) characters required.";
+                status.className = "text-xs text-center h-4 text-red-400";
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Saving...`;
+            lucide.createIcons();
+
+            try {
+                const newReview = {
+                    name: nameInput.value.trim(),
+                    content: contentInput.value.trim(),
+                    timestamp: new Date(),
+                    userId: window.userId,
+                };
+
+                if (window.db) {
+                    await addDoc(collection(window.db, REVIEWS_COLLECTION), {
+                        ...newReview,
+                        timestamp: serverTimestamp()
+                    });
+                } else {
+                    const localReviews = JSON.parse(localStorage.getItem(REVIEWS_COLLECTION) || "[]");
+                    localReviews.unshift({ id: Date.now().toString(), ...newReview });
+                    localStorage.setItem(REVIEWS_COLLECTION, JSON.stringify(localReviews));
+                    window.renderReviews(localReviews);
+                }
+
+                nameInput.value = '';
+                contentInput.value = '';
+                status.textContent = "Review Saved!";
+                status.className = "text-xs text-center h-4 text-green-400";
+                setTimeout(() => {
+                    window.toggleReviewModal();
+                    status.textContent = "";
+                    btn.innerHTML = `POST REVIEW <i data-lucide="send" class="w-4 h-4"></i>`;
+                }, 1000);
+            } catch (e) {
+                status.textContent = "Error: " + e.message;
+                status.className = "text-xs text-center h-4 text-red-400";
+                btn.innerHTML = `POST REVIEW <i data-lucide="send" class="w-4 h-4"></i>`;
+            } finally {
+                btn.disabled = false;
+                lucide.createIcons();
+            }
+        }
+        
+        // --- DELETE REVIEW ---
+        window.deleteReview = async function(reviewId, ownerId) {
+            if (window.userId !== ownerId) {
+                alert("You can only delete your own reviews.");
+                return;
+            }
+            if(!confirm("Delete this review?")) return;
+
+            if (window.db) {
+                await deleteDoc(doc(window.db, REVIEWS_COLLECTION, reviewId));
+            } else {
+                let localReviews = JSON.parse(localStorage.getItem(REVIEWS_COLLECTION) || "[]");
+                localReviews = localReviews.filter(r => r.id !== reviewId);
+                localStorage.setItem(REVIEWS_COLLECTION, JSON.stringify(localReviews));
+                window.renderReviews(localReviews);
+            }
+        }
+
+        // --- INIT ---
+        window.onload = function() {
+            const configStr = typeof __firebase_config !== 'undefined' ? __firebase_config : null;
+            if (configStr) {
+                try {
+                    const app = initializeApp(JSON.parse(configStr));
+                    window.db = getFirestore(app);
+                    window.auth = getAuth(app);
+                    onAuthStateChanged(window.auth, (user) => {
+                        if (user) window.userId = user.uid;
+                        window.setupReviewListener(window.renderReviews);
+                    });
+                } catch(e) { window.setupReviewListener(window.renderReviews); }
+            } else {
+                window.setupReviewListener(window.renderReviews);
+            }
+            lucide.createIcons();
+            
+            // Close Modals on Escape
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    document.querySelectorAll('.modal-active').forEach(m => window.toggleModal(m.id));
+                }
+            });
+        };
+    </script>
+    
+    <!-- Design Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        ds: { orange: '#ea580c', gold: '#fbbf24', dark: '#18181b', black: '#09090b' },
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #09090b; }
+        ::-webkit-scrollbar-thumb { background: #ea580c; border-radius: 10px; }
+        
+        .modal-enter { opacity: 0; transform: scale(0.95); pointer-events: none; }
+        .modal-active { opacity: 1; transform: scale(1); pointer-events: auto; }
+        .modal-base { transition: all 0.2s ease-out; }
+        
+        .hex-bg { background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6z' fill='%23ea580c' fill-opacity='0.03' fill-rule='evenodd'/%3E%3C/svg%3E"); }
+    </style>
+</head>
+<body class="bg-ds-black text-gray-200 font-sans selection:bg-ds-orange selection:text-white h-screen overflow-hidden flex flex-col">
+
+    <!-- NAVBAR -->
+    <nav class="fixed w-full z-40 bg-transparent pt-6">
+        <div class="w-full flex items-center justify-between px-6 sm:px-10">
+            <!-- LEFT CORNER LOGO -->
+            <div class="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity">
+                <img src="assets/logo ds.png" alt="DS Logo" class="h-10 w-10 object-contain drop-shadow-[0_0_10px_rgba(234,88,12,0.5)]">
+                <span class="text-xl font-bold text-white tracking-tighter hidden sm:block">DS <span class="text-ds-orange">RP</span></span>
+            </div>
+
+            <!-- RIGHT CORNER NAVIGATION -->
+            <div class="hidden md:flex items-center gap-8">
+                <button onclick="toggleFeaturesModal()" class="hover:text-ds-orange transition-colors text-sm font-medium uppercase tracking-wide">Features</button>
+                <button onclick="toggleRulesModal()" class="hover:text-ds-orange transition-colors text-sm font-medium uppercase tracking-wide">Rules</button>
+                <a href="vip.html" class="hover:text-ds-orange transition-colors text-sm font-medium uppercase tracking-wide">Shop</a>
+                <button onclick="toggleJoinModal()" class="bg-ds-orange text-black px-8 py-2 rounded font-bold hover:bg-ds-gold transition-all shadow-[0_0_15px_rgba(234,88,12,0.3)] uppercase">
+                    PLAY NOW
+                </button>
+            </div>
+            
+            <!-- Mobile Menu Button -->
+            <button class="md:hidden text-white" onclick="document.getElementById('mob-menu').classList.toggle('hidden')">
+                <i data-lucide="menu" class="w-8 h-8"></i>
+            </button>
+        </div>
+
+        <!-- Mobile Menu -->
+        <div id="mob-menu" class="hidden md:hidden absolute top-20 right-4 bg-ds-dark border border-ds-orange/20 p-4 space-y-3 text-center rounded-xl shadow-2xl w-48 z-50">
+            <button onclick="toggleFeaturesModal()" class="block w-full py-2 hover:text-ds-orange">Features</button>
+            <button onclick="toggleRulesModal()" class="block w-full py-2 hover:text-ds-orange">Rules</button>
+            <a href="vip.html" class="block w-full py-2 hover:text-ds-orange">Shop</a>
+            <button onclick="toggleJoinModal()" class="w-full bg-ds-orange text-black py-2 rounded font-bold mt-2">CONNECT</button>
+        </div>
+    </nav>
+
+    <!-- FLOATING REVIEW BUTTON -->
+    <button onclick="toggleReviewModal()" class="fixed left-0 top-1/2 -translate-y-1/2 bg-ds-orange text-black p-3 rounded-r-xl shadow-xl z-30 hover:pl-5 transition-all group">
+        <div class="flex items-center gap-2">
+            <i data-lucide="message-circle" class="w-6 h-6"></i>
+            <span class="max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-300 font-bold whitespace-nowrap">Reviews</span>
+        </div>
+    </button>
+
+    <!-- MAIN HERO CONTENT (Centered) -->
+    <main class="flex-grow flex flex-col justify-center items-center text-center px-4 relative hex-bg">
+        
+        <!-- Hero Logo -->
+        <div class="mb-10 relative inline-block group animate-in fade-in zoom-in duration-1000">
+            <div class="absolute inset-0 bg-ds-orange blur-3xl opacity-20 group-hover:opacity-40 transition-opacity"></div>
+            <img src="assets/logo ds.png" alt="Big DS Logo" 
+                 class="h-48 w-48 md:h-64 md:w-64 object-contain relative z-10 drop-shadow-2xl transition-transform duration-500 hover:scale-105">
+        </div>
+
+        <h1 class="text-5xl md:text-7xl font-black text-white mb-6 leading-none">
+            WELCOME TO <br class="hidden md:block" />
+            <span class="text-transparent bg-clip-text bg-gradient-to-r from-ds-orange via-yellow-400 to-ds-orange animate-pulse-slow">
+                DarkSide RP
+            </span>
+        </h1>
+        <p class="text-gray-400 text-lg mb-8 max-w-2xl mx-auto">
+            Serious RP. Custom Framework. Player-Driven Economy .
+        <p class="text-gray-400 text-lg mb-8 max-w-2xl mx-auto">
+            and we all devs here bro 
+        </p>
+        
+        <div class="flex justify-center gap-4">
+            <button onclick="toggleJoinModal()" class="bg-ds-orange text-black font-bold px-8 py-4 rounded-xl shadow-[0_0_20px_rgba(234,88,12,0.4)] hover:scale-105 transition-transform">
+                CONNECT NOW
+            </button>
+            <a href="https://discord.gg/fsW68m3t" target="_blank" class="bg-ds-dark border border-white/20 text-white font-bold px-8 py-4 rounded-xl hover:bg-white/10 transition-colors">
+                DISCORD
+            </a>
+        </div>
+
+        <!-- BOTTOM FOOTER (Inside Home Page) -->
+        <div class="absolute bottom-6 w-full px-6 sm:px-10 flex justify-between items-center">
+            <div class="flex items-center gap-2 opacity-50">
+                <img src="assets/logo ds.png" class="h-6 w-6 object-contain">
+                <span class="text-sm">© 2025 DS RP</span>
+            </div>
+            <div class="flex gap-6 items-center">
+                <button onclick="toggleTwitchModal()" class="text-gray-500 hover:text-[#9146FF] transition-colors flex items-center gap-2" title="Streamers">
+                    <span class="text-xs uppercase font-bold hidden sm:block">Watch Live</span>
+                    <i data-lucide="twitch" class="w-6 h-6"></i>
+                </button>
+                <a href="https://discord.gg/fsW68m3t" target="_blank" class="text-gray-500 hover:text-[#5865F2] transition-colors flex items-center gap-2">
+                    <span class="text-xs uppercase font-bold hidden sm:block">Join Community</span>
+                    <svg class="w-6 h-6 fill-current" viewBox="0 0 127.14 96.36"><path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.11,77.11,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.89,105.89,0,0,0,126.6,80.22c1.24-23.28-5.83-49.1-21.72-72.15ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5-12.74,11.44-12.74S96.23,46,96.12,53,91.08,65.69,84.69,65.69Z"/></svg>
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <!-- ================= MODALS ================= -->
+
+    <!-- 1. FEATURES MODAL -->
+    <div id="features-modal" class="fixed inset-0 z-[100] bg-black/95 backdrop-blur-md flex items-center justify-center modal-enter modal-base p-4">
+        <div class="relative w-full max-w-6xl p-6">
+            <button onclick="toggleFeaturesModal()" class="absolute -top-10 right-0 text-gray-400 hover:text-white flex items-center gap-2">
+                CLOSE <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+            
+            <h2 class="text-4xl font-bold text-center text-white mb-12">SERVER <span class="text-ds-orange">FEATURES</span></h2>
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- Economy -->
+                <div class="bg-ds-dark p-8 rounded-2xl border border-white/5 hover:border-ds-orange/50 transition-all hover:-translate-y-2">
+                    <div class="w-14 h-14 bg-ds-orange/10 rounded-lg flex items-center justify-center mb-6">
+                        <i data-lucide="banknote" class="text-ds-orange w-8 h-8"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-2">Real Economy</h3>
+                    <p class="text-gray-400 text-sm">Every dollar counts. From businesses to illegal trades, the market is controlled by you.</p>
+                </div>
+                <!-- Justice -->
+                <div class="bg-ds-dark p-8 rounded-2xl border border-white/5 hover:border-ds-orange/50 transition-all hover:-translate-y-2">
+                    <div class="w-14 h-14 bg-ds-orange/10 rounded-lg flex items-center justify-center mb-6">
+                        <i data-lucide="scale" class="text-ds-orange w-8 h-8"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-2">Fair Justice</h3>
+                    <p class="text-gray-400 text-sm">Unbiased staff and a detailed legal system ensure fair play for criminals and cops alike.</p>
+                </div>
+                <!-- Optimized -->
+                <div class="bg-ds-dark p-8 rounded-2xl border border-white/5 hover:border-ds-orange/50 transition-all hover:-translate-y-2">
+                    <div class="w-14 h-14 bg-ds-orange/10 rounded-lg flex items-center justify-center mb-6">
+                        <i data-lucide="zap" class="text-ds-orange w-8 h-8"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-2">Optimized</h3>
+                    <p class="text-gray-400 text-sm">High FPS, custom assets, and smooth scripts designed for the best performance.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. RULES MODAL -->
+    <div id="rules-modal" class="fixed inset-0 z-[100] bg-black/95 backdrop-blur-md flex items-center justify-center modal-enter modal-base p-4">
+        <div class="relative w-full max-w-7xl p-6">
+            <button onclick="toggleRulesModal()" class="absolute -top-10 right-0 text-gray-400 hover:text-white flex items-center gap-2">
+                CLOSE <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+
+            <h2 class="text-4xl font-bold text-center text-white mb-12">CORE <span class="text-ds-orange">RULES</span></h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- No RDM -->
+                <div class="bg-ds-dark p-6 rounded-2xl border border-white/5 hover:border-red-500/50 transition-all">
+                    <div class="w-12 h-12 bg-red-900/20 rounded-lg flex items-center justify-center mb-4">
+                        <i data-lucide="skull" class="text-red-500 w-6 h-6"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-white mb-2">No RDM / VDM</h3>
+                    <p class="text-gray-400 text-xs">Random Death Match and Vehicle Death Match are strictly forbidden. Valid RP reason required.</p>
+                </div>
+                <!-- No Meta -->
+                <div class="bg-ds-dark p-6 rounded-2xl border border-white/5 hover:border-purple-500/50 transition-all">
+                    <div class="w-12 h-12 bg-purple-900/20 rounded-lg flex items-center justify-center mb-4">
+                        <i data-lucide="user-x" class="text-purple-500 w-6 h-6"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-white mb-2">No Metagaming</h3>
+                    <p class="text-gray-400 text-xs">Do not use OOC info in-game. Stream sniping or using Discord info for IC advantage is banned.</p>
+                </div>
+                <!-- Fear RP -->
+                <div class="bg-ds-dark p-6 rounded-2xl border border-white/5 hover:border-yellow-500/50 transition-all">
+                    <div class="w-12 h-12 bg-yellow-900/20 rounded-lg flex items-center justify-center mb-4">
+                        <i data-lucide="shield-alert" class="text-yellow-500 w-6 h-6"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-white mb-2">Fear RP</h3>
+                    <p class="text-gray-400 text-xs">Value your life. If held at gunpoint or outnumbered, you must comply as you would IRL.</p>
+                </div>
+                <!-- Stay IC -->
+                <div class="bg-ds-dark p-6 rounded-2xl border border-white/5 hover:border-ds-orange/50 transition-all">
+                    <div class="w-12 h-12 bg-ds-orange/10 rounded-lg flex items-center justify-center mb-4">
+                        <i data-lucide="mic" class="text-ds-orange w-6 h-6"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-white mb-2">Stay In Character</h3>
+                    <p class="text-gray-400 text-xs">Always remain in character. Report rule breaks via ticket, never break character in-game.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. JOIN MODAL -->
+    <div id="join-modal" class="fixed inset-0 z-[100] bg-black/90 backdrop-blur-sm flex items-center justify-center modal-enter modal-base p-4">
+        <div class="relative bg-ds-dark border border-white/10 p-8 rounded-2xl max-w-md w-full text-center shadow-2xl">
+            <button onclick="toggleJoinModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white bg-black/50 p-1 rounded-full z-50">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+            <img src="assets/logo ds.png" class="h-20 w-20 mx-auto mb-4 object-contain">
+            <h2 class="text-2xl font-black text-white mb-2">JOIN THE <span class="text-ds-orange">CITY</span></h2>
+            <a href="https://discord.gg/fsW68m3t" target="_blank" class="flex items-center justify-center gap-2 w-full py-3 bg-[#5865F2] hover:bg-[#4752C4] text-white rounded font-bold mb-4 transition-transform hover:scale-[1.02]">
+                <svg class="w-5 h-5 fill-current" viewBox="0 0 127.14 96.36"><path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.11,77.11,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.89,105.89,0,0,0,126.6,80.22c1.24-23.28-5.83-49.1-21.72-72.15ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5-12.74,11.44-12.74S96.23,46,96.12,53,91.08,65.69,84.69,65.69Z"/></svg>
+                Join Discord
+            </a>
+            <div class="bg-black/50 p-4 rounded border border-ds-orange/20">
+                <p class="text-xs text-gray-500 mb-2 uppercase font-bold">F8 Connect Command</p>
+                <div onclick="copyIP()" class="bg-ds-dark p-3 rounded border border-white/10 flex justify-between items-center cursor-pointer hover:border-ds-orange group">
+                    <code class="text-ds-gold text-sm font-mono">connect 65.21.131.159:32311</code>
+                    <i data-lucide="copy" class="w-4 h-4 text-gray-500 group-hover:text-white"></i>
+                </div>
+                <div id="ip-toast" class="text-green-500 text-xs mt-2 opacity-0 transition-opacity">Copied!</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. REVIEWS MODAL -->
+    <div id="review-modal" class="fixed inset-0 z-[100] bg-black/90 backdrop-blur-sm flex items-center justify-center modal-enter modal-base p-4">
+        <div class="relative bg-ds-dark border border-white/10 w-full max-w-4xl h-[80vh] rounded-2xl flex flex-col md:flex-row shadow-2xl overflow-hidden">
+            <button onclick="toggleReviewModal()" class="absolute top-4 right-4 md:right-4 md:top-4 text-gray-400 hover:text-white bg-black/50 p-1 rounded-full z-50">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+            <!-- Form -->
+            <div class="w-full md:w-1/3 bg-black/40 p-6 border-r border-white/5 flex flex-col">
+                <h3 class="text-xl font-bold text-ds-orange mb-4">Write Review</h3>
+                <form onsubmit="event.preventDefault(); submitReview();" class="flex flex-col gap-4 flex-grow">
+                    <input type="text" id="reviewName" placeholder="Character Name" class="bg-ds-dark border border-white/10 p-3 rounded focus:border-ds-orange outline-none text-white" maxlength="20">
+                    <textarea id="reviewContent" placeholder="How was your RP experience?" class="bg-ds-dark border border-white/10 p-3 rounded focus:border-ds-orange outline-none text-white resize-none flex-grow" maxlength="400"></textarea>
+                    <p id="review-status" class="text-xs text-center h-4"></p>
+                    <button id="submit-btn" type="submit" class="bg-ds-orange hover:bg-ds-gold text-black font-bold py-3 rounded flex items-center justify-center gap-2 transition-colors">
+                        POST REVIEW <i data-lucide="send" class="w-4 h-4"></i>
+                    </button>
+                </form>
+            </div>
+            <!-- List -->
+            <div class="w-full md:w-2/3 p-6 bg-ds-dark flex flex-col">
+                <h3 class="text-xl font-bold text-white mb-4">Community Feedback</h3>
+                <div id="reviews-list" class="flex-grow overflow-y-auto space-y-3 pr-2">
+                    <div id="reviews-loading" class="text-gray-500 text-center mt-10">Loading reviews...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. TWITCH MODAL -->
+    <div id="twitch-modal" class="fixed inset-0 z-[100] bg-black/90 backdrop-blur-sm flex items-center justify-center modal-enter modal-base p-4">
+        <div class="relative bg-ds-dark border border-[#9146FF]/30 p-8 rounded-2xl max-w-sm w-full text-center shadow-[0_0_30px_rgba(145,70,255,0.2)]">
+            <button onclick="toggleTwitchModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white bg-black/50 p-1 rounded-full z-50">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+            <h2 class="text-2xl font-black text-white mb-6">LIVE <span class="text-[#9146FF]">STREAMS</span></h2>
+            <div class="space-y-3">
+                <a href="https://www.twitch.tv/s4fwane" target="_blank" class="flex items-center gap-3 p-3 bg-[#18181b] border border-white/10 hover:border-[#9146FF] hover:bg-[#9146FF] text-white rounded transition-all group">
+                    <i data-lucide="twitch" class="w-5 h-5 text-[#9146FF] group-hover:text-white"></i>
+                    <span class="font-bold">s4fwane</span>
+                </a>
+                <a href="https://www.twitch.tv/mind2miind" target="_blank" class="flex items-center gap-3 p-3 bg-[#18181b] border border-white/10 hover:border-[#9146FF] hover:bg-[#9146FF] text-white rounded transition-all group">
+                    <i data-lucide="twitch" class="w-5 h-5 text-[#9146FF] group-hover:text-white"></i>
+                    <span class="font-bold">mind2miind</span>
+                </a>
+                <a href="https://www.twitch.tv/nak3dbanana" target="_blank" class="flex items-center gap-3 p-3 bg-[#18181b] border border-white/10 hover:border-[#9146FF] hover:bg-[#9146FF] text-white rounded transition-all group">
+                    <i data-lucide="twitch" class="w-5 h-5 text-[#9146FF] group-hover:text-white"></i>
+                    <span class="font-bold">nak3dbanana</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Logic -->
+    <script>
+        window.toggleModal = (id) => {
+            const el = document.getElementById(id);
+            if (el.classList.contains('modal-active')) {
+                el.classList.remove('modal-active');
+                el.classList.add('modal-enter');
+            } else {
+                el.classList.remove('modal-enter');
+                el.classList.add('modal-active');
+            }
+        }
+        window.toggleJoinModal = () => toggleModal('join-modal');
+        window.toggleReviewModal = () => toggleModal('review-modal');
+        window.toggleTwitchModal = () => toggleModal('twitch-modal');
+        window.toggleFeaturesModal = () => toggleModal('features-modal');
+        window.toggleRulesModal = () => toggleModal('rules-modal');
+
+        window.copyIP = () => {
+            const ip = "connect 65.21.131.159:32311";
+            navigator.clipboard.writeText(ip).then(() => {
+                const t = document.getElementById('ip-toast');
+                t.classList.remove('opacity-0');
+                setTimeout(() => t.classList.add('opacity-0'), 2000);
+            }).catch(() => alert("Copy failed, please select manually: " + ip));
+        }
+
+        window.renderReviews = (reviews) => {
+            const list = document.getElementById('reviews-list');
+            list.innerHTML = '';
+            
+            if (document.getElementById('reviews-loading')) {
+                 document.getElementById('reviews-loading').style.display = 'none';
+            }
+            
+            if (!reviews || reviews.length === 0) {
+                list.innerHTML = '<div class="text-gray-500 text-center italic">No reviews yet. Be the first!</div>';
+                return;
+            }
+
+            reviews.forEach(r => {
+                const div = document.createElement('div');
+                div.className = "bg-black/30 p-3 rounded border border-white/5 relative group";
+                
+                let dateDisplay = "Recent";
+                if(r.timestamp?.toDate) {
+                    dateDisplay = r.timestamp.toDate().toLocaleDateString();
+                } else if (r.timestamp) {
+                    dateDisplay = new Date(r.timestamp).toLocaleDateString();
+                }
+
+                div.innerHTML = `
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="text-ds-orange font-bold">${r.name}</span>
+                        <span class="text-[10px] text-gray-500">${dateDisplay}</span>
+                    </div>
+                    <p class="text-gray-300 text-sm whitespace-pre-wrap">${r.content}</p>
+                    ${r.userId === window.userId ? `
+                        <button onclick="deleteReview('${r.id}', '${r.userId}')" class="absolute top-2 right-2 text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        </button>
+                    ` : ''}
+                `;
+                list.appendChild(div);
+            });
+            lucide.createIcons();
+        };
+    </script>
+</body>
+</html>

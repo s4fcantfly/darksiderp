@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>DS RP — VIP Cars Shop</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://js.stripe.com/v3/"></script>
+  <style>
+    body{background:#09090b;color:#e5e7eb}
+    .ds-orange { color: #ea580c; }
+    .bg-ds-orange { background-color: #ea580c; }
+    .hover\:bg-ds-gold:hover { background-color: #f59e0b; }
+    .bg-ds-black { background-color: #09090b; }
+    .giant-logo-bg {
+      background: #09090b url('assets/logo ds.png') no-repeat center center;
+      background-size: 600px 600px; /* Bigger logo */
+      opacity: 1; /* Clear, no transparency */
+    }
+  </style>
+  <!-- Firebase -->
+  <script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+  import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+  // Firebase config
+  const firebaseConfig = {
+    apiKey: "AIzaSyCaRn2lbQNQjqWUujH_hbomM-9b7JbA9Mk",
+    authDomain: "dsrp-ma.firebaseapp.com",
+    projectId: "dsrp-ma",
+    storageBucket: "dsrp-ma.firebasestorage.app",
+    messagingSenderId: "629900395638",
+    appId: "1:629900395638:web:15182be43f6c13abea8b57",
+    measurementId: "G-CZWJJX4Z43"
+  };
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  // Products by category
+    const PRODUCTS = {
+      SEDAN: [
+        { id: "waldw222", name: "waldw222", price: 25, desc: "Luxury sedan with premium features." },
+        { id: "w222wald", name: "w222wald", price: 30, desc: "Elegant and powerful sedan." },
+        { id: "teslapd", name: "teslapd", price: 25, desc: "Electric sedan with advanced tech." },
+        { id: "taycanani", name: "taycanani", price: 30, desc: "Sporty electric sedan." },
+        { id: "rs721", name: "rs721", price: 25, desc: "High-performance sedan." },
+        { id: "rs666", name: "rs666", price: 30, desc: "Aggressive sedan design." },
+        { id: "rs615", name: "rs615", price: 25, desc: "Compact luxury sedan." },
+        { id: "rs322sedan", name: "rs322sedan", price: 30, desc: "Reliable family sedan." },
+        { id: "rs7c8beast", name: "rs7c8beast", price: 25, desc: "Beast-mode sedan upgrade." },
+        { id: "rs7bratwa", name: "rs7bratwa", price: 30, desc: "Custom bratwa edition." },
+        { id: "rs7", name: "rs7", price: 25, desc: "Top-tier RS7 sedan." },
+        { id: "rs6rabt20", name: "rs6rabt20", price: 30, desc: "Rabt-tuned RS6." },
+        { id: "rs6c8", name: "rs6c8", price: 25, desc: "C8-inspired RS6." },
+        { id: "rrphantom", name: "rrphantom", price: 30, desc: "Phantom Rolls-Royce sedan." },
+        { id: "rmode63s", name: "rmode63s", price: 25, desc: "Rmod E63S sedan." },
+        { id: "mercec63s", name: "mercec63s", price: 30, desc: "Mercedes C63S." },
+        { id: "maybach", name: "maybach", price: 25, desc: "Ultimate Maybach luxury." },
+        { id: "m4c", name: "m4c", price: 30, desc: "M4 Competition sedan variant." },
+        { id: "2019m5", name: "2019m5", price: 25, desc: "2019 M5 sedan." },
+        { id: "22m5", name: "22m5", price: 30, desc: "2022 M5 upgrade." },
+        { id: "18rs7", name: "18rs7", price: 25, desc: "2018 RS7." }
+      ],
+      BIKES: [
+        { id: "xc90", name: "xc90", price: 20, desc: "Adventure bike XC90." },
+        { id: "GODzYAMR1", name: "GODzYAMR1", price: 20, desc: "GODz Yamaha R1." },
+        { id: "GODzNINJAH2", name: "GODzNINJAH2", price: 20, desc: "GODz Ninja H2." },
+        { id: "GODzBMWS1000RR", name: "GODzBMWS1000RR", price: 20, desc: "GODz BMW S1000RR." }
+      ],
+      SUVS: [
+        { id: "x6wz", name: "x6wz", price: 30, desc: "X6 WZ SUV." },
+        { id: "venatus", name: "venatus", price: 30, desc: "Venatus luxury SUV." },
+        { id: "rmodx6", name: "rmodx6", price: 30, desc: "Rmod X6." },
+        { id: "rmodr50", name: "rmodr50", price: 30, desc: "Rmod R50 SUV." },
+        { id: "q8prior", name: "q8prior", price: 30, desc: "Q8 Prior edition." },
+        { id: "q8hycade", name: "q8hycade", price: 30, desc: "Q8 Hycade." },
+        { id: "mlbrabus", name: "mlbrabus", price: 30, desc: "ML Brabus SUV." },
+        { id: "mansurus", name: "mansurus", price: 30, desc: "Mansory Urus." },
+        { id: "manhartx7", name: "manhartx7", price: 30, desc: "Manhart X7." },
+        { id: "machewb", name: "machewb", price: 30, desc: "Mache WB SUV." },
+        { id: "KillerHwak", name: "KillerHwak", price: 30, desc: "Killer Hwak." },
+        { id: "G63Sam", name: "G63Sam", price: 30, desc: "G63 Sam edition." },
+        { id: "fpaceprior", name: "fpaceprior", price: 30, desc: "F-Pace Prior." },
+        { id: "1016urus", name: "1016urus", price: 30, desc: "1016 Urus." },
+        { id: "20xb7", name: "20xb7", price: 30, desc: "20X B7 SUV." },
+        { id: "2ncsx7", name: "2ncsx7", price: 30, desc: "2NCS X7." }
+      ],
+      COUPE: [
+        { id: "topcargt63", name: "topcargt63", price: 25, desc: "Topcar GT63 coupe." },
+        { id: "s63msc", name: "s63msc", price: 30, desc: "S63 MSC coupe." },
+        { id: "s63coupe", name: "s63coupe", price: 35, desc: "S63 Coupe." },
+        { id: "mk4hycade", name: "mk4hycade", price: 25, desc: "Mk4 Hycade." },
+        { id: "m4f82", name: "m4f82", price: 30, desc: "M4 F82." },
+        { id: "m4speedhunter", name: "m4speedhunter", price: 35, desc: "M4 Speedhunter." },
+        { id: "golf75r", name: "golf75r", price: 25, desc: "Golf 7 5R." },
+        { id: "golf7", name: "golf7", price: 30, desc: "Golf 7 coupe." },
+        { id: "GODz95GSX", name: "GODz95GSX", price: 35, desc: "GODz 95 GSX." },
+        { id: "evox", name: "evox", price: 25, desc: "Evo X coupe." },
+        { id: "crownbp", name: "crownbp", price: 30, desc: "Crown BP." },
+        { id: "contgt2011", name: "contgt2011", price: 35, desc: "Continental GT 2011." },
+        { id: "cls19", name: "cls19", price: 25, desc: "CLS 19." },
+        { id: "civic2020", name: "civic2020", price: 30, desc: "Civic 2020." },
+        { id: "a80", name: "a80", price: 35, desc: "A80 coupe." },
+        { id: "a45", name: "a45", price: 25, desc: "A45 AMG." }
+      ],
+      "OLD-FASHION": [
+        { id: "rmodskyline34", name: "rmodskyline34", price: 30, desc: "Rmod Skyline R34." },
+        { id: "rmodm3e36", name: "rmodm3e36", price: 35, desc: "Rmod M3 E36." },
+        { id: "rmod240sx", name: "rmod240sx", price: 25, desc: "Rmod 240SX." },
+        { id: "por911gt3", name: "por911gt3", price: 30, desc: "Porsche 911 GT3." },
+        { id: "m3e36", name: "m3e36", price: 35, desc: "M3 E36 classic." },
+        { id: "e55", name: "e55", price: 25, desc: "E55 AMG." },
+        { id: "bmwe39", name: "bmwe39", price: 30, desc: "BMW E39." },
+        { id: "benzsl63", name: "benzsl63", price: 35, desc: "Benz SL63." },
+        { id: "benzc32", name: "benzc32", price: 25, desc: "Benz C32." }
+      ],
+      "SUPER-CARS": [
+        { id: "chironsupersport22", name: "chironsupersport22", price: 40, desc: "Chiron Super Sport 2022." },
+        { id: "chironsuper", name: "chironsuper", price: 40, desc: "Chiron Super." },
+        { id: "c63hr", name: "c63hr", price: 40, desc: "C63 HR." },
+        { id: "amrevu23mg", name: "amrevu23mg", price: 40, desc: "AMR EV U23 MG." },
+        { id: "c8", name: "c8", price: 40, desc: "Corvette C8." },
+        { id: "AmgGtrLight", name: "AmgGtrLight", price: 40, desc: "AMG GTR Light." },
+        { id: "amggtbs", name: "amggtbs", price: 40, desc: "AMG GT BS." },
+        { id: "1016rwdevo", name: "1016rwdevo", price: 40, desc: "1016 RWD Evo." },
+        { id: "911turbos", name: "911turbos", price: 40, desc: "911 Turbos." },
+        { id: "911gtrs", name: "911gtrs", price: 40, desc: "911 GTRS." },
+        { id: "488animated", name: "488animated", price: 40, desc: "488 Animated." },
+        { id: "488", name: "488", price: 40, desc: "Ferrari 488." },
+        { id: "17mansorypnmr", name: "17mansorypnmr", price: 40, desc: "2017 Mansory Panorama." },
+        { id: "2ncsbmwm8", name: "2ncsbmwm8", price: 40, desc: "2NCS BMW M8." },
+        { id: "488sp", name: "488sp", price: 40, desc: "488 Spider." }
+      ]
+    };
+
+    let currentCategory = 'SEDAN'; // Default category
+
+    function setCategory(category) {
+      currentCategory = category;
+      renderProducts();
+      updateTabStyles();
+    }
+
+    function updateTabStyles() {
+      const tabs = document.querySelectorAll('#categoryTabs button');
+      tabs.forEach(tab => {
+        const cat = tab.onclick.toString().match(/'([^']+)'/)[1];
+        if (cat === currentCategory) {
+          tab.className = 'px-4 py-2 bg-ds-orange text-black font-bold rounded hover:bg-ds-gold transition shadow-lg glow';
+        } else {
+          tab.className = 'px-4 py-2 bg-white/10 text-gray-200 rounded hover:bg-ds-orange hover:text-black transition shadow-md';
+        }
+      });
+    }
+
+    function renderProducts() {
+      const container = document.getElementById('products');
+      container.innerHTML = '';
+      const categoryProducts = PRODUCTS[currentCategory] || [];
+      categoryProducts.forEach(p => {
+        const card = document.createElement('div');
+        card.className = "bg-[#0f1720] p-4 rounded-lg border border-white/5 flex flex-col hover:shadow-2xl hover:shadow-ds-orange/20 transition-all duration-300 hover:scale-105";
+        card.innerHTML = `
+          <img src="https://via.placeholder.com/200x150?text=${p.name}" alt="${p.name}" class="h-40 object-contain mb-3 bg-black/40 rounded hover:opacity-80 transition">
+          <div class="flex-1">
+            <h3 class="font-bold text-lg">${p.name}</h3>
+            <p class="text-gray-400 text-sm mb-3">${p.desc}</p>
+          </div>
+          <div class="flex items-center justify-between mt-3">
+            <div class="text-ds-orange font-bold">$${p.price.toFixed(2)}</div>
+            <div class="flex gap-2">
+              <button onclick="showDetails('${p.id}')" class="px-3 py-1 text-sm bg-white/5 rounded">Details</button>
+              <button onclick="orderCar('${p.id}')" class="px-3 py-1 bg-ds-orange text-black font-bold rounded hover:bg-ds-gold transition shadow-md hover:shadow-lg">Order</button>
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+      lucide.createIcons();
+    }
+
+  function showDetails(id) {
+    const p = PRODUCTS.find(x => x.id === id);
+    alert(`${p.name}\n\n${p.desc}\n\nPrice: $${p.price.toFixed(2)}\n\nTo order, enter your Discord ID below.`);
+  }
+
+  function orderCar(productId) {
+    selectedProduct = PRODUCTS.find(x => x.id === productId);
+    if (!selectedProduct) return;
+    document.getElementById('orderProductName').textContent = selectedProduct.name;
+    document.getElementById('orderForm').classList.remove('hidden');
+    document.getElementById('discordId').focus();
+  }
+
+  async function submitOrder() {
+    const discordId = document.getElementById('discordId').value.trim();
+    if (!discordId || !selectedProduct) return alert('Please enter a valid Discord ID.');
+
+    const submitBtn = document.getElementById('submitOrderBtn');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Submitting...';
+
+    try {
+      // Save to Firebase
+      await addDoc(collection(db, 'carOrders'), {
+        productId: selectedProduct.id,
+        productName: selectedProduct.name,
+        discordId,
+        timestamp: serverTimestamp(),
+        status: 'pending'
+      });
+
+      // Post to Discord webhook
+      const webhookUrl = 'https://discord.com/api/webhooks/1449859208995406057/tzGCZcme-PWV_NOIAPg6RLD_2MQMg2UMaGemOBLiWH7scn6ZG6kCTppTwT6JHlD_fV94';
+      await fetch(webhookUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          content: `New car order: **${selectedProduct.name}** for Discord ID: **${discordId}**. Price: $${selectedProduct.price.toFixed(2)}. Check Firebase for details.`
+        })
+      });
+
+      alert('Order submitted! Mods will contact you on Discord for delivery.');
+      document.getElementById('orderForm').classList.add('hidden');
+      document.getElementById('discordId').value = '';
+    } catch (err) {
+      console.error(err);
+      alert('Order failed. Try again or contact mods on Discord.');
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Submit Order';
+    }
+  }
+
+  // Attach event listener
+  document.getElementById('submitOrderBtn').addEventListener('click', submitOrder);
+
+  // Expose functions globally for HTML onclick
+  window.showDetails = showDetails;
+  window.orderCar = orderCar;
+  window.setCategory = setCategory;
+
+  renderProducts();
+  updateTabStyles(); // Initial call
+</script>
+</head>
+<body class="min-h-screen p-6">
+  <header class="flex items-center justify-between mb-8">
+    <div class="flex items-center gap-3">
+      <img src="assets/logo ds.png" class="h-10 w-10" alt="DS">
+      <h1 class="text-2xl font-bold">DS RP — VIP Cars</h1>
+    </div>
+    <nav class="flex gap-4">
+      <a href="index.html" class="text-sm hover:text-orange-500">Home</a>
+      <a href="vip.html" class="text-sm font-bold">Shop</a>
+      <a href="https://discord.gg/fsW68m3t" target="_blank" class="text-sm">Discord</a>
+    </nav>
+  </header>
+
+  <main class="giant-logo-bg p-6 min-h-screen">
+    <p class="text-gray-400 mb-6 max-w-2xl">Browse premium VIP vehicles. Submit an order with your Discord ID for mod review.</p>
+
+    <!-- Category Tabs -->
+    <div class="flex flex-wrap gap-2 mb-6" id="categoryTabs">
+      <button onclick="setCategory('SEDAN')" class="px-4 py-2 bg-ds-orange text-black font-bold rounded hover:bg-ds-gold transition shadow-lg">SEDAN</button>
+      <button onclick="setCategory('BIKES')" class="px-4 py-2 bg-white/10 text-gray-200 rounded hover:bg-ds-orange hover:text-black transition shadow-md">BIKES</button>
+      <button onclick="setCategory('SUVS')" class="px-4 py-2 bg-white/10 text-gray-200 rounded hover:bg-ds-orange hover:text-black transition shadow-md">SUV'S</button>
+      <button onclick="setCategory('COUPE')" class="px-4 py-2 bg-white/10 text-gray-200 rounded hover:bg-ds-orange hover:text-black transition shadow-md">COUPE</button>
+      <button onclick="setCategory('OLD-FASHION')" class="px-4 py-2 bg-white/10 text-gray-200 rounded hover:bg-ds-orange hover:text-black transition shadow-md">OLD-FASHION</button>
+      <button onclick="setCategory('SUPER-CARS')" class="px-4 py-2 bg-white/10 text-gray-200 rounded hover:bg-ds-orange hover:text-black transition shadow-md">SUPER-CARS</button>
+    </div>
+
+    <div id="products" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+
+    <div id="orderForm" class="hidden mt-6 p-4 bg-[#0f1720] rounded-lg border border-white/5">
+      <h3 class="font-bold mb-3">Order <span id="orderProductName"></span></h3>
+      <label class="block text-sm text-gray-400 mb-2">Your Discord ID (e.g., username#1234)</label>
+      <input id="discordId" type="text" class="w-full p-3 rounded bg-black/40 border border-white/5 mb-3" placeholder="Enter your Discord ID" />
+      <button id="submitOrderBtn" class="w-full bg-ds-orange text-black font-bold py-2 rounded">Submit Order</button>
+      <p class="text-xs text-gray-400 mt-2">Mods will review and deliver the vehicle in-game.</p>
+    </div>
+
+    <div id="notice" class="text-xs text-gray-400 mt-6">
+      Note: buying requires a backend endpoint to create Stripe Checkout sessions. See code comments.
+    </div>
+  </main>
+</body>
+</html>

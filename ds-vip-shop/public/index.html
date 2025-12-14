@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>DS RP — VIP Cars Shop</title>
+  <link rel="stylesheet" href="assets/css/styles.css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://js.stripe.com/v3/"></script>
+</head>
+<body class="bg-gradient-to-b from-black to-orange-600 text-white min-h-screen p-6">
+  <header class="flex items-center justify-between mb-8">
+    <div class="flex items-center gap-3">
+      <img src="assets/logo.svg" class="h-10 w-10" alt="DS">
+      <h1 class="text-2xl font-bold">DS RP — VIP Cars</h1>
+    </div>
+    <nav class="flex gap-4">
+      <a href="index.html" class="text-sm hover:text-orange-300">Home</a>
+      <a href="vip.html" class="text-sm font-bold">Shop</a>
+      <a href="https://discord.gg/fsW68m3t" target="_blank" class="text-sm hover:text-orange-300">Discord</a>
+    </nav>
+  </header>
+
+  <main>
+    <p class="text-gray-300 mb-6 max-w-2xl">Browse premium VIP vehicles. Purchases are processed via Stripe Checkout and delivered in-game by the server after verification.</p>
+
+    <div id="products" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+
+    <div id="notice" class="text-xs text-gray-300 mt-6">
+      Note: buying requires a backend endpoint to create Stripe Checkout sessions. See code comments.
+    </div>
+  </main>
+
+  <script src="assets/js/vip.js"></script>
+</body>
+</html>
