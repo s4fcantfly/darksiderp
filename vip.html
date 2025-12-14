@@ -136,6 +136,7 @@
     };
 
     let currentCategory = 'SEDAN'; // Default category
+    let selectedProduct = null; // To hold the currently selected product
 
     function setCategory(category) {
       currentCategory = category;
@@ -182,16 +183,21 @@
     }
 
   function showDetails(id) {
-    const p = PRODUCTS.find(x => x.id === id);
+    const p = Object.values(PRODUCTS).flat().find(x => x.id === id);
     alert(`${p.name}\n\n${p.desc}\n\nPrice: $${p.price.toFixed(2)}\n\nTo order, enter your Discord ID below.`);
   }
 
   function orderCar(productId) {
-    selectedProduct = PRODUCTS.find(x => x.id === productId);
+    // Find the product from any category
+    selectedProduct = Object.values(PRODUCTS).flat().find(p => p.id === productId);
     if (!selectedProduct) return;
+
+    // Populate and show the form
     document.getElementById('orderProductName').textContent = selectedProduct.name;
+    const orderForm = document.getElementById('orderForm');
     document.getElementById('orderForm').classList.remove('hidden');
     document.getElementById('discordId').focus();
+    orderForm.scrollIntoView({ behavior: 'smooth' });
   }
 
   async function submitOrder() {
@@ -213,7 +219,7 @@
       });
 
       // Post to Discord webhook
-      const webhookUrl = 'https://discord.com/api/webhooks/1449859208995406057/tzGCZcme-PWV_NOIAPg6RLD_2MQMg2UMaGemOBLiWH7scn6ZG6kCTppTwT6JHlD_fV94';
+      const webhookUrl = 'https://discord.com/api/webhooks/1249859208995406057/tzGCZcme-PWV_NOIAPg6RLD_2MQMg2UMaGemOBLiWH7scn6ZG6kCTppTwT6JHlD_fV94';
       await fetch(webhookUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -234,16 +240,18 @@
     }
   }
 
-  // Attach event listener
-  document.getElementById('submitOrderBtn').addEventListener('click', submitOrder);
+  document.addEventListener('DOMContentLoaded', () => {
+    // Attach event listener
+    document.getElementById('submitOrderBtn').addEventListener('click', submitOrder);
 
-  // Expose functions globally for HTML onclick
-  window.showDetails = showDetails;
-  window.orderCar = orderCar;
-  window.setCategory = setCategory;
+    // Expose functions globally for HTML onclick
+    window.showDetails = showDetails;
+    window.orderCar = orderCar;
+    window.setCategory = setCategory;
 
-  renderProducts();
-  updateTabStyles(); // Initial call
+    renderProducts();
+    updateTabStyles(); // Initial call
+  });
 </script>
 </head>
 <body class="min-h-screen p-6">
