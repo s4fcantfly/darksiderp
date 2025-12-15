@@ -219,15 +219,21 @@
       });
 
       // Post to Discord webhook
-      const webhookUrl = 'https://discord.com/api/webhooks/1249859208995406057/tzGCZcme-PWV_NOIAPg6RLD_2MQMg2UMaGemOBLiWH7scn6ZG6kCTppTwT6JHlD_fV94';
-      await fetch(webhookUrl, {
+      const webhookUrl = 'https://discord.com/api/webhooks/1449917248465670236/igF5ckp16pJWCjFtMXyMDv2UzINh2MeEKS89HWkYHBBtERpU9f-CufTtCJYlGl3E8peM';
+      const webhookResponse = await fetch(webhookUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           content: `New car order: **${selectedProduct.name}** for Discord ID: **${discordId}**. Price: $${selectedProduct.price.toFixed(2)}. Check Firebase for details.`
         })
       });
-
+      
+      if (!webhookResponse.ok) {
+        // If the webhook returns an error (e.g., 404 Not Found), throw an error to be caught below.
+        const errorData = await webhookResponse.json();
+        throw new Error(`Discord webhook failed: ${errorData.message}`);
+      }
+      
       alert('Order submitted! Mods will contact you on Discord for delivery.');
       document.getElementById('orderForm').classList.add('hidden');
       document.getElementById('discordId').value = '';
