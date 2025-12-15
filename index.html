@@ -237,7 +237,7 @@
             <button onclick="toggleJoinModal()" class="bg-ds-orange text-black font-bold px-8 py-4 rounded-xl shadow-[0_0_20px_rgba(234,88,12,0.4)] hover:scale-105 transition-transform">
                 CONNECT NOW
             </button>
-            <a href="https://discord.gg/fsW68m3t" target="_blank" class="bg-ds-dark border border-white/20 text-white font-bold px-8 py-4 rounded-xl hover:bg-white/10 transition-colors">
+            <a href="https://discord.gg/TPPGVZA4zF" target="_blank" class="bg-ds-dark border border-white/20 text-white font-bold px-8 py-4 rounded-xl hover:bg-white/10 transition-colors">
                 DISCORD
             </a>
         </div>
@@ -360,7 +360,7 @@
             <div class="bg-black/50 p-4 rounded border border-ds-orange/20">
                 <p class="text-xs text-gray-500 mb-2 uppercase font-bold">F8 Connect Command</p>
                 <div onclick="copyIP()" class="bg-ds-dark p-3 rounded border border-white/10 flex justify-between items-center cursor-pointer hover:border-ds-orange group">
-                    <code class="text-ds-gold text-sm font-mono">connect 65.21.131.159:32311</code>
+                    <code class="text-ds-gold text-sm font-mono">connect 152.114.195.150</code>
                     <i data-lucide="copy" class="w-4 h-4 text-gray-500 group-hover:text-white"></i>
                 </div>
                 <div id="ip-toast" class="text-green-500 text-xs mt-2 opacity-0 transition-opacity">Copied!</div>
@@ -410,7 +410,7 @@
                         <i data-lucide="tv" class="w-6 h-6 text-black"></i>
                     </div>
                     <div>
-                        <div class="font-bold text-ds-orange">Banana Channel</div>
+                        <div class="font-bold text-ds-orange">BANANA</div>
                         <div class="text-sm text-gray-400">Live streams and updates</div>
                     </div>
                 </a>
@@ -464,7 +464,7 @@
         window.toggleRulesModal = () => toggleModal('rules-modal');
 
         window.copyIP = () => {
-            const ip = "connect 65.21.131.159:32311";
+            const ip = "connect 152.114.195.150";
             navigator.clipboard.writeText(ip).then(() => {
                 const t = document.getElementById('ip-toast');
                 t.classList.remove('opacity-0');
