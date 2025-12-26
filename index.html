@@ -162,12 +162,10 @@
         .modal-enter { opacity: 0; transform: scale(0.95); pointer-events: none; }
         .modal-active { opacity: 1; transform: scale(1); pointer-events: auto; }
         .modal-base { transition: all 0.2s ease-out; }
-        
-        .hex-bg { background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6z' fill='%23ea580c' fill-opacity='0.03' fill-rule='evenodd'/%3E%3C/svg%3E"); }
     </style>
     <link rel="icon" href="assets/logo ds.png">
 </head>
-<body class="bg-ds-black text-gray-200 font-sans selection:bg-ds-orange selection:text-white h-screen overflow-hidden flex flex-col">
+<body class="bg-black text-gray-200 font-sans selection:bg-ds-orange selection:text-white h-screen overflow-hidden flex flex-col" style="background-image: radial-gradient(circle at 50% -20%, #2a1505 0%, #000000 60%);">
 
     <!-- NAVBAR -->
     <nav class="fixed w-full z-40 bg-transparent pt-6">
@@ -175,7 +173,7 @@
             <!-- LEFT CORNER LOGO -->
             <div class="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity">
                 <img src="assets/logo ds.png" alt="DS Logo" class="h-10 w-10 object-contain drop-shadow-[0_0_10px_rgba(234,88,12,0.5)]">
-                <span class="text-xl font-bold text-white tracking-tighter hidden sm:block">DS <span class="text-ds-orange">RP</span></span>
+                <span class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400 tracking-tighter hidden sm:block">DS <span class="text-yellow-500">RP</span></span>
             </div>
 
             <!-- RIGHT CORNER NAVIGATION -->
@@ -183,7 +181,7 @@
                 <button onclick="toggleFeaturesModal()" class="hover:text-ds-orange transition-colors text-sm font-medium uppercase tracking-wide">Features</button>
                 <button onclick="toggleRulesModal()" class="hover:text-ds-orange transition-colors text-sm font-medium uppercase tracking-wide">Rules</button>
                 <a href="vip.html" class="hover:text-ds-orange transition-colors text-sm font-medium uppercase tracking-wide">Shop</a>
-                <button onclick="toggleJoinModal()" class="bg-ds-orange text-black px-8 py-2 rounded font-bold hover:bg-ds-gold transition-all shadow-[0_0_15px_rgba(234,88,12,0.3)] uppercase">
+                <button onclick="toggleJoinModal()" class="bg-gradient-to-r from-orange-600 to-yellow-500 text-black px-8 py-2 rounded font-bold hover:from-orange-500 hover:to-yellow-400 transition-all shadow-[0_0_15px_rgba(234,88,12,0.3)] uppercase">
                     PLAY NOW
                 </button>
             </div>
@@ -204,7 +202,7 @@
     </nav>
 
     <!-- FLOATING REVIEW BUTTON -->
-    <button onclick="toggleReviewModal()" class="fixed left-0 top-1/2 -translate-y-1/2 bg-ds-orange text-black p-3 rounded-r-xl shadow-xl z-30 hover:pl-5 transition-all group">
+    <button onclick="toggleReviewModal()" class="fixed left-0 top-1/2 -translate-y-1/2 bg-gradient-to-r from-orange-600 to-yellow-500 text-black p-3 rounded-r-xl shadow-xl z-30 hover:pl-5 transition-all group">
         <div class="flex items-center gap-2">
             <i data-lucide="message-circle" class="w-6 h-6"></i>
             <span class="max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-300 font-bold whitespace-nowrap">Reviews</span>
@@ -212,7 +210,7 @@
     </button>
 
     <!-- MAIN HERO CONTENT (Centered) -->
-    <main class="flex-grow flex flex-col justify-center items-center text-center px-4 relative hex-bg">
+    <main class="flex-grow flex flex-col justify-center items-center text-center px-4 relative">
         
         <!-- Hero Logo -->
         <div class="mb-10 relative inline-block group animate-in fade-in zoom-in duration-1000">
@@ -223,7 +221,7 @@
 
         <h1 class="text-5xl md:text-7xl font-black text-white mb-6 leading-none">
             WELCOME TO <br class="hidden md:block" />
-            <span class="text-transparent bg-clip-text bg-gradient-to-r from-ds-orange via-yellow-400 to-ds-orange animate-pulse-slow">
+            <span class="text-transparent bg-clip-text bg-gradient-to-r from-orange-600 via-yellow-500 to-orange-600 animate-pulse-slow">
                 DarkSide RP
             </span>
         </h1>
@@ -233,10 +231,10 @@
         </p>
         
         <div class="flex justify-center gap-4">
-            <button onclick="toggleJoinModal()" class="bg-ds-orange text-black font-bold px-8 py-4 rounded-xl shadow-[0_0_20px_rgba(234,88,12,0.4)] hover:scale-105 transition-transform">
+            <button onclick="toggleJoinModal()" class="bg-gradient-to-r from-orange-600 to-yellow-500 text-black font-bold px-8 py-4 rounded-xl shadow-[0_0_20px_rgba(234,88,12,0.4)] hover:scale-105 transition-transform">
                 CONNECT NOW
             </button>
-            <a href="https://discord.gg/TPPGVZA4zF" target="_blank" class="bg-ds-dark border border-white/20 text-white font-bold px-8 py-4 rounded-xl hover:bg-white/10 transition-colors">
+            <a href="https://discord.gg/TPPGVZA4zF" target="_blank" class="bg-ds-dark border border-white/20 text-white font-bold px-8 py-4 rounded-xl hover:bg-[#5865F2] hover:border-[#5865F2] transition-all hover:scale-105 hover:shadow-[0_0_20px_rgba(88,101,242,0.4)]">
                 DISCORD
             </a>
         </div>
@@ -280,7 +278,7 @@
             <h2 class="text-4xl font-bold text-center text-white mb-12">SERVER <span class="text-ds-orange">FEATURES</span></h2>
             <div class="grid md:grid-cols-3 gap-8">
                 <!-- Economy -->
-                <div class="bg-ds-dark p-8 rounded-2xl border border-white/5 hover:border-ds-orange/50 transition-all hover:-translate-y-2">
+                <div class="bg-zinc-900 p-8 rounded-2xl border border-orange-500/20 hover:border-orange-500/50 transition-all hover:-translate-y-2 shadow-lg">
                     <div class="w-14 h-14 bg-ds-orange/10 rounded-lg flex items-center justify-center mb-6">
                         <i data-lucide="banknote" class="text-ds-orange w-8 h-8"></i>
                     </div>
@@ -288,7 +286,7 @@
                     <p class="text-gray-400 text-sm">Every dollar counts. From businesses to illegal trades, the market is controlled by you.</p>
                 </div>
                 <!-- Justice -->
-                <div class="bg-ds-dark p-8 rounded-2xl border border-white/5 hover:border-ds-orange/50 transition-all hover:-translate-y-2">
+                <div class="bg-zinc-900 p-8 rounded-2xl border border-orange-500/20 hover:border-orange-500/50 transition-all hover:-translate-y-2 shadow-lg">
                     <div class="w-14 h-14 bg-ds-orange/10 rounded-lg flex items-center justify-center mb-6">
                         <i data-lucide="scale" class="text-ds-orange w-8 h-8"></i>
                     </div>
@@ -296,7 +294,7 @@
                     <p class="text-gray-400 text-sm">Unbiased staff and a detailed legal system ensure fair play for criminals and cops alike.</p>
                 </div>
                 <!-- Optimized -->
-                <div class="bg-ds-dark p-8 rounded-2xl border border-white/5 hover:border-ds-orange/50 transition-all hover:-translate-y-2">
+                <div class="bg-zinc-900 p-8 rounded-2xl border border-orange-500/20 hover:border-orange-500/50 transition-all hover:-translate-y-2 shadow-lg">
                     <div class="w-14 h-14 bg-ds-orange/10 rounded-lg flex items-center justify-center mb-6">
                         <i data-lucide="zap" class="text-ds-orange w-8 h-8"></i>
                     </div>
@@ -317,7 +315,7 @@
             <h2 class="text-4xl font-bold text-center text-white mb-12">CORE <span class="text-ds-orange">RULES</span></h2>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <!-- No RDM -->
-                <div class="bg-ds-dark p-6 rounded-2xl border border-white/5 hover:border-red-500/50 transition-all">
+                <div class="bg-zinc-900 p-6 rounded-2xl border border-orange-500/20 hover:border-red-500/50 transition-all shadow-lg">
                     <div class="w-12 h-12 bg-red-900/20 rounded-lg flex items-center justify-center mb-4">
                         <i data-lucide="skull" class="text-red-500 w-6 h-6"></i>
                     </div>
@@ -325,7 +323,7 @@
                     <p class="text-gray-400 text-xs">Random Death Match and Vehicle Death Match are strictly forbidden. Valid RP reason required.</p>
                 </div>
                 <!-- No Meta -->
-                <div class="bg-ds-dark p-6 rounded-2xl border border-white/5 hover:border-purple-500/50 transition-all">
+                <div class="bg-zinc-900 p-6 rounded-2xl border border-orange-500/20 hover:border-purple-500/50 transition-all shadow-lg">
                     <div class="w-12 h-12 bg-purple-900/20 rounded-lg flex items-center justify-center mb-4">
                         <i data-lucide="user-x" class="text-purple-500 w-6 h-6"></i>
                     </div>
@@ -333,7 +331,7 @@
                     <p class="text-gray-400 text-xs">Do not use OOC info in-game. Stream sniping or using Discord info for IC advantage is banned.</p>
                 </div>
                 <!-- Fear RP -->
-                <div class="bg-ds-dark p-6 rounded-2xl border border-white/5 hover:border-yellow-500/50 transition-all">
+                <div class="bg-zinc-900 p-6 rounded-2xl border border-orange-500/20 hover:border-yellow-500/50 transition-all shadow-lg">
                     <div class="w-12 h-12 bg-yellow-900/20 rounded-lg flex items-center justify-center mb-4">
                         <i data-lucide="shield-alert" class="text-yellow-500 w-6 h-6"></i>
                     </div>
@@ -341,7 +339,7 @@
                     <p class="text-gray-400 text-xs">Value your life. If held at gunpoint or outnumbered, you must comply as you would IRL.</p>
                 </div>
                 <!-- Stay IC -->
-                <div class="bg-ds-dark p-6 rounded-2xl border border-white/5 hover:border-ds-orange/50 transition-all">
+                <div class="bg-zinc-900 p-6 rounded-2xl border border-orange-500/20 hover:border-ds-orange/50 transition-all shadow-lg">
                     <div class="w-12 h-12 bg-ds-orange/10 rounded-lg flex items-center justify-center mb-4">
                         <i data-lucide="mic" class="text-ds-orange w-6 h-6"></i>
                     </div>
@@ -354,7 +352,7 @@
 
     <!-- 3. JOIN MODAL -->
     <div id="join-modal" class="fixed inset-0 z-[100] bg-black/90 backdrop-blur-sm flex items-center justify-center modal-enter modal-base p-4">
-        <div class="relative bg-ds-dark border border-white/10 p-8 rounded-2xl max-w-md w-full text-center shadow-2xl">
+        <div class="relative bg-zinc-900 border border-orange-500/20 p-8 rounded-2xl max-w-md w-full text-center shadow-[0_0_50px_rgba(0,0,0,0.8)]">
             <button onclick="toggleJoinModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white bg-black/50 p-1 rounded-full z-50">
                 <i data-lucide="x" class="w-6 h-6"></i>
             </button>
@@ -366,7 +364,7 @@
             </a>
             <div class="bg-black/50 p-4 rounded border border-ds-orange/20">
                 <p class="text-xs text-gray-500 mb-2 uppercase font-bold">F8 Connect Command</p>
-                <div onclick="copyIP()" class="bg-ds-dark p-3 rounded border border-white/10 flex justify-between items-center cursor-pointer hover:border-ds-orange group">
+                <div onclick="copyIP()" class="bg-zinc-900 p-3 rounded border border-white/10 flex justify-between items-center cursor-pointer hover:border-ds-orange group">
                     <code class="text-ds-gold text-sm font-mono">connect 152.114.195.150</code>
                     <i data-lucide="copy" class="w-4 h-4 text-gray-500 group-hover:text-white"></i>
                 </div>
@@ -377,7 +375,7 @@
 
     <!-- 4. REVIEWS MODAL -->
     <div id="review-modal" class="fixed inset-0 z-[100] bg-black/90 backdrop-blur-sm flex items-center justify-center modal-enter modal-base p-4">
-        <div class="relative bg-ds-dark border border-white/10 w-full max-w-4xl h-[80vh] rounded-2xl flex flex-col md:flex-row shadow-2xl overflow-hidden">
+        <div class="relative bg-zinc-900 border border-orange-500/20 w-full max-w-4xl h-[80vh] rounded-2xl flex flex-col md:flex-row shadow-[0_0_50px_rgba(0,0,0,0.8)] overflow-hidden">
             <button onclick="toggleReviewModal()" class="absolute top-4 right-4 md:right-4 md:top-4 text-gray-400 hover:text-white bg-black/50 p-1 rounded-full z-50">
                 <i data-lucide="x" class="w-6 h-6"></i>
             </button>
@@ -385,16 +383,16 @@
             <div class="w-full md:w-1/3 bg-black/40 p-6 border-r border-white/5 flex flex-col">
                 <h3 class="text-xl font-bold text-ds-orange mb-4">Write Review</h3>
                 <form onsubmit="event.preventDefault(); submitReview();" class="flex flex-col gap-4 flex-grow">
-                    <input type="text" id="reviewName" placeholder="Character Name" class="bg-ds-dark border border-white/10 p-3 rounded focus:border-ds-orange outline-none text-white" maxlength="20">
-                    <textarea id="reviewContent" placeholder="How was your RP experience?" class="bg-ds-dark border border-white/10 p-3 rounded focus:border-ds-orange outline-none text-white resize-none flex-grow" maxlength="400"></textarea>
+                    <input type="text" id="reviewName" placeholder="Character Name" class="bg-zinc-900 border border-white/10 p-3 rounded focus:border-ds-orange outline-none text-white" maxlength="20">
+                    <textarea id="reviewContent" placeholder="How was your RP experience?" class="bg-zinc-900 border border-white/10 p-3 rounded focus:border-ds-orange outline-none text-white resize-none flex-grow" maxlength="400"></textarea>
                     <p id="review-status" class="text-xs text-center h-4"></p>
-                    <button id="submit-btn" type="submit" class="bg-ds-orange hover:bg-ds-gold text-black font-bold py-3 rounded flex items-center justify-center gap-2 transition-colors">
+                    <button id="submit-btn" type="submit" class="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-500 hover:to-yellow-400 text-black font-bold py-3 rounded flex items-center justify-center gap-2 transition-colors">
                         POST REVIEW <i data-lucide="send" class="w-4 h-4"></i>
                     </button>
                 </form>
             </div>
             <!-- List -->
-            <div class="w-full md:w-2/3 p-6 bg-ds-dark flex flex-col">
+            <div class="w-full md:w-2/3 p-6 bg-zinc-900 flex flex-col">
                 <h3 class="text-xl font-bold text-white mb-4">Community Feedback</h3>
                 <div id="reviews-list" class="flex-grow overflow-y-auto space-y-3 pr-2">
                     <div id="reviews-loading" class="text-gray-500 text-center mt-10">Loading reviews...</div>
@@ -412,39 +410,39 @@
             <h2 class="text-2xl font-black text-white mb-6">LIVE <span class="text-[#9146FF]">STREAMS</span></h2>
             <!-- TWITCH CHANNELS -->
             <div class="space-y-4">
-                <a href="#" class="flex items-center gap-3 p-4 bg-ds-dark/50 border border-ds-orange/20 rounded-lg hover:bg-ds-dark/70 transition-all group">
-                    <div class="w-12 h-12 bg-ds-orange rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
-                        <i data-lucide="tv" class="w-6 h-6 text-black"></i>
+                <a href="#" class="flex items-center gap-3 p-4 bg-ds-dark/50 border border-[#9146FF]/20 rounded-lg hover:bg-ds-dark/70 hover:border-[#9146FF] hover:shadow-[0_0_15px_rgba(145,70,255,0.3)] transition-all group">
+                    <div class="w-12 h-12 bg-[#9146FF] rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <i data-lucide="twitch" class="w-6 h-6 text-white"></i>
                     </div>
                     <div>
-                        <div class="font-bold text-ds-orange">BANANA</div>
+                        <div class="font-bold text-[#9146FF]">BANANA</div>
                         <div class="text-sm text-gray-400">Live streams and updates</div>
                     </div>
                 </a>
-                <a href="https://www.twitch.tv/cameleon13" target="_blank" class="flex items-center gap-3 p-4 bg-ds-dark/50 border border-ds-orange/20 rounded-lg hover:bg-ds-dark/70 transition-all group">
-                    <div class="w-12 h-12 bg-ds-orange rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
-                        <i data-lucide="tv" class="w-6 h-6 text-black"></i>
+                <a href="https://www.twitch.tv/cameleon13" target="_blank" class="flex items-center gap-3 p-4 bg-ds-dark/50 border border-[#9146FF]/20 rounded-lg hover:bg-ds-dark/70 hover:border-[#9146FF] hover:shadow-[0_0_15px_rgba(145,70,255,0.3)] transition-all group">
+                    <div class="w-12 h-12 bg-[#9146FF] rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <i data-lucide="twitch" class="w-6 h-6 text-white"></i>
                     </div>
                     <div>
-                        <div class="font-bold text-ds-orange">CAMELEON</div>
+                        <div class="font-bold text-[#9146FF]">CAMELEON</div>
                         <div class="text-sm text-gray-400">Live streams and updates</div>
                     </div>
                 </a>
-                <a href="https://twitch.tv/s4fwane" target="_blank" class="flex items-center gap-3 p-4 bg-ds-dark/50 border border-ds-orange/20 rounded-lg hover:bg-ds-dark/70 transition-all group">
-                    <div class="w-12 h-12 bg-ds-orange rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
-                        <i data-lucide="tv" class="w-6 h-6 text-black"></i>
+                <a href="https://twitch.tv/s4fwane" target="_blank" class="flex items-center gap-3 p-4 bg-ds-dark/50 border border-[#9146FF]/20 rounded-lg hover:bg-ds-dark/70 hover:border-[#9146FF] hover:shadow-[0_0_15px_rgba(145,70,255,0.3)] transition-all group">
+                    <div class="w-12 h-12 bg-[#9146FF] rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <i data-lucide="twitch" class="w-6 h-6 text-white"></i>
                     </div>
                     <div>
-                        <div class="font-bold text-ds-orange">S4F</div>
+                        <div class="font-bold text-[#9146FF]">S4F</div>
                         <div class="text-sm text-gray-400">Live streams and updates</div>
                     </div>
                 </a>
-                <a href="https://twitch.tv/mind2miind" target="_blank" class="flex items-center gap-3 p-4 bg-ds-dark/50 border border-ds-orange/20 rounded-lg hover:bg-ds-dark/70 transition-all group">
-                    <div class="w-12 h-12 bg-ds-orange rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
-                        <i data-lucide="tv" class="w-6 h-6 text-black"></i>
+                <a href="https://twitch.tv/mind2miind" target="_blank" class="flex items-center gap-3 p-4 bg-ds-dark/50 border border-[#9146FF]/20 rounded-lg hover:bg-ds-dark/70 hover:border-[#9146FF] hover:shadow-[0_0_15px_rgba(145,70,255,0.3)] transition-all group">
+                    <div class="w-12 h-12 bg-[#9146FF] rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <i data-lucide="twitch" class="w-6 h-6 text-white"></i>
                     </div>
                     <div>
-                        <div class="font-bold text-ds-orange">MIND</div>
+                        <div class="font-bold text-[#9146FF]">MIND</div>
                         <div class="text-sm text-gray-400">Live streams and updates</div>
                     </div>
                 </a>

@@ -4,21 +4,36 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>DS RP - DS Cars</title>
-  <link rel="icon" href="assets/logo ds.webp">
+  <link rel="icon" href="assets/logo ds.png">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://js.stripe.com/v3/"></script>
   <style>
-    body{background:#09090b;color:#e5e7eb}
+    body {
+      background-color: #000000;
+      background-image: radial-gradient(circle at 50% -20%, #2a1505 0%, #000000 60%);
+      color: #e5e7eb;
+    }
     .ds-orange { color: #ea580c; }
     .bg-ds-orange { background-color: #ea580c; }
-    .hover\:bg-ds-gold:hover { background-color: #f59e0b; }
     .bg-ds-black { background-color: #09090b; }
     .giant-logo-bg {
-      background: #09090b url('assets/logo ds.webp') no-repeat center center;
+      background: url('assets/logo ds.png') no-repeat center center;
       background-size: 600px 600px; /* Bigger logo */
+      background-attachment: fixed;
       opacity: 1; /* Clear, no transparency */
     }
+    @keyframes modalPop {
+      0% { transform: scale(0.95); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .modal-animate { animation: modalPop 0.3s ease-out forwards; }
+    
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-in-up { animation: fadeInUp 0.5s ease-out forwards; }
   </style>
   <!-- Firebase -->
   <script type="module">
@@ -147,9 +162,9 @@
       tabs.forEach(tab => {
         const cat = tab.onclick.toString().match(/'([^']+)'/)[1];
         if (cat === currentCategory) {
-          tab.className = 'px-4 py-2 bg-ds-orange text-black font-bold rounded hover:bg-ds-gold transition shadow-lg glow';
+          tab.className = 'px-6 py-2 bg-gradient-to-r from-orange-600 to-yellow-500 text-black font-bold rounded-full shadow-[0_0_20px_rgba(234,88,12,0.3)] transform scale-105 transition-all';
         } else {
-          tab.className = 'px-4 py-2 bg-white/10 text-gray-200 rounded hover:bg-ds-orange hover:text-black transition shadow-md';
+          tab.className = 'px-6 py-2 border border-white/10 text-gray-400 rounded-full hover:border-orange-500/50 hover:text-white hover:bg-white/5 transition-all';
         }
       });
     }
@@ -158,20 +173,21 @@
       const container = document.getElementById('products');
       container.innerHTML = '';
       const categoryProducts = PRODUCTS[currentCategory] || [];
-      categoryProducts.forEach(p => {
+      categoryProducts.forEach((p, index) => {
         const card = document.createElement('div');
-        card.className = "bg-[#0f1720] p-4 rounded-lg border border-white/5 flex flex-col hover:shadow-2xl hover:shadow-ds-orange/20 transition-all duration-300 hover:scale-105";
+        card.className = "bg-zinc-900/50 backdrop-blur-sm p-4 rounded-xl border border-white/5 hover:border-orange-500/30 flex flex-col hover:shadow-[0_0_30px_rgba(234,88,12,0.15)] transition-all duration-300 hover:-translate-y-1 group opacity-0 animate-fade-in-up";
+        card.style.animationDelay = `${index * 50}ms`;
         card.innerHTML = `
           <img src="${p.image}" alt="${p.name}" class="h-40 object-cover w-full mb-3 bg-black/40 rounded hover:opacity-80 transition">
           <div class="flex-1">
-            <h3 class="font-bold text-lg">${p.name}</h3>
+            <h3 class="font-bold text-lg text-white group-hover:text-yellow-500 transition-colors">${p.name}</h3>
             <p class="text-gray-400 text-sm mb-3">${p.desc}</p>
           </div>
           <div class="flex items-center justify-between mt-3">
-            <div class="text-ds-orange font-bold">$${p.price.toFixed(2)}</div>
+            <div class="text-yellow-500 font-bold text-xl">$${p.price.toFixed(2)}</div>
             <div class="flex gap-2">
-              <button onclick="showDetails('${p.id}')" class="px-3 py-1 text-sm bg-white/5 rounded">Details</button>
-              <button onclick="orderCar('${p.id}')" class="px-3 py-1 bg-ds-orange text-black font-bold rounded hover:bg-ds-gold transition shadow-md hover:shadow-lg">Order</button>
+              <button onclick="showDetails('${p.id}')" class="px-4 py-2 text-sm border border-white/10 text-gray-300 rounded hover:border-yellow-500/50 hover:text-yellow-500 transition">Details</button>
+              <button onclick="orderCar('${p.id}')" class="px-4 py-2 bg-gradient-to-r from-orange-600 to-yellow-500 text-black font-bold rounded hover:from-orange-500 hover:to-yellow-400 transition shadow-lg">Order</button>
             </div>
           </div>
         `;
@@ -182,7 +198,42 @@
 
   function showDetails(id) {
     const p = Object.values(PRODUCTS).flat().find(x => x.id === id);
-    alert(`${p.name}\n\n${p.desc}\n\nPrice: $${p.price.toFixed(2)}\n\nTo order, enter your Discord ID below.`);
+    if (!p) return;
+    
+    selectedProduct = p; // Update selected product for modal order
+
+    document.getElementById('modalImage').src = p.image;
+    document.getElementById('modalName').textContent = p.name;
+    document.getElementById('modalDesc').textContent = p.desc;
+    document.getElementById('modalPrice').textContent = '$' + p.price.toFixed(2);
+    
+    // Reset modal form state
+    const btn = document.getElementById('modalOrderBtn');
+    const form = document.getElementById('modalOrderForm');
+    
+    btn.classList.remove('hidden');
+    form.classList.add('hidden');
+    document.getElementById('modalDiscordId').value = '';
+
+    // Setup button handlers
+    btn.onclick = () => {
+      btn.classList.add('hidden');
+      form.classList.remove('hidden');
+      document.getElementById('modalDiscordId').focus();
+    };
+    
+    document.getElementById('modalCancelBtn').onclick = () => {
+      form.classList.add('hidden');
+      btn.classList.remove('hidden');
+    };
+
+    document.getElementById('productModal').classList.remove('hidden');
+    document.body.style.overflow = 'hidden'; // Disable scrolling
+  }
+
+  function closeModal() {
+    document.getElementById('productModal').classList.add('hidden');
+    document.body.style.overflow = ''; // Re-enable scrolling
   }
 
   function orderCar(productId) {
@@ -244,12 +295,51 @@
     }
   }
 
+  async function submitModalOrder() {
+    const discordId = document.getElementById('modalDiscordId').value.trim();
+    if (!discordId || !selectedProduct) return alert('Please enter a valid Discord ID.');
+
+    const submitBtn = document.getElementById('modalSubmitBtn');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Submitting...';
+
+    try {
+      await addDoc(collection(db, 'carOrders'), {
+        productId: selectedProduct.id,
+        productName: selectedProduct.name,
+        discordId,
+        timestamp: serverTimestamp(),
+        status: 'pending'
+      });
+
+      const webhookUrl = 'https://discord.com/api/webhooks/1449917248465670236/igF5ckp16pJWCjFtMXyMDv2UzINh2MeEKS89HWkYHBBtERpU9f-CufTtCJYlGl3E8peM';
+      await fetch(webhookUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          content: `New car order: **${selectedProduct.name}** for Discord ID: **${discordId}**. Price: $${selectedProduct.price.toFixed(2)}. Check Firebase for details.`
+        })
+      });
+      
+      alert('Order submitted! Mods will contact you on Discord for delivery.');
+      closeModal();
+    } catch (err) {
+      console.error(err);
+      alert('Order failed. Try again.');
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Confirm Order';
+    }
+  }
+
   document.addEventListener('DOMContentLoaded', () => {
     // Attach event listener
     document.getElementById('submitOrderBtn').addEventListener('click', submitOrder);
+    document.getElementById('modalSubmitBtn').addEventListener('click', submitModalOrder);
 
     // Expose functions globally for HTML onclick
     window.showDetails = showDetails;
+    window.closeModal = closeModal;
     window.orderCar = orderCar;
     window.setCategory = setCategory;
 
@@ -261,13 +351,13 @@
 <body class="min-h-screen p-6">
   <header class="flex items-center justify-between mb-8">
     <div class="flex items-center gap-3">
-      <img src="assets/logo ds.webp" class="h-10 w-10" alt="DS">
-      <h1 class="text-2xl font-bold">DS RP — VIP Cars</h1>
+      <img src="assets/logo ds.png" class="h-10 w-10" alt="DS">
+      <h1 class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">DS RP — <span class="text-yellow-500">VIP Cars</span></h1>
     </div>
     <nav class="flex gap-4">
-      <a href="index.html" class="text-base hover:text-ds-orange">Home</a>
-      <a href="vip.html" class="text-base font-bold">Shop</a>
-      <a href="https://discord.gg/TPPGVZA4zF" target="_blank" class="text-base hover:text-ds-orange">Discord</a>
+      <a href="index.html" class="text-base text-gray-400 hover:text-yellow-500 transition-colors">Home</a>
+      <a href="vip.html" class="text-base font-bold text-white border-b-2 border-orange-500">Shop</a>
+      <a href="https://discord.gg/TPPGVZA4zF" target="_blank" class="text-base text-gray-400 hover:text-yellow-500 transition-colors">Discord</a>
     </nav>
   </header>
 
@@ -276,23 +366,62 @@
 
     <!-- Category Tabs -->
     <div class="flex flex-wrap gap-2 mb-6" id="categoryTabs">
-      <button onclick="setCategory('SEDAN')" class="px-4 py-2 bg-ds-orange text-black font-bold rounded hover:bg-ds-gold transition shadow-lg">SEDAN</button>
-      <button onclick="setCategory('BIKES')" class="px-4 py-2 bg-white/10 text-gray-200 rounded hover:bg-ds-orange hover:text-black transition shadow-md">BIKES</button>
-      <button onclick="setCategory('SUVS')" class="px-4 py-2 bg-white/10 text-gray-200 rounded hover:bg-ds-orange hover:text-black transition shadow-md">SUV'S</button>
-      <button onclick="setCategory('COUPE')" class="px-4 py-2 bg-white/10 text-gray-200 rounded hover:bg-ds-orange hover:text-black transition shadow-md">COUPE</button>
-      <button onclick="setCategory('OLD-FASHION')" class="px-4 py-2 bg-white/10 text-gray-200 rounded hover:bg-ds-orange hover:text-black transition shadow-md">OLD-FASHION</button>
-      <button onclick="setCategory('SUPER-CARS')" class="px-4 py-2 bg-white/10 text-gray-200 rounded hover:bg-ds-orange hover:text-black transition shadow-md">SUPER-CARS</button>
+      <button onclick="setCategory('SEDAN')">SEDAN</button>
+      <button onclick="setCategory('BIKES')">BIKES</button>
+      <button onclick="setCategory('SUVS')">SUV'S</button>
+      <button onclick="setCategory('COUPE')">COUPE</button>
+      <button onclick="setCategory('OLD-FASHION')">OLD-FASHION</button>
+      <button onclick="setCategory('SUPER-CARS')">SUPER-CARS</button>
     </div>
 
     <div id="products" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
 
-    <div id="orderForm" class="hidden mt-6 p-4 bg-[#0f1720] rounded-lg border border-white/5">
+    <div id="orderForm" class="hidden mt-6 p-6 bg-zinc-900 rounded-xl border border-orange-500/20 shadow-2xl">
       <h3 class="font-bold mb-3">Order <span id="orderProductName"></span></h3>
       <label class="block text-sm text-gray-400 mb-2">Your Discord ID (e.g., username#1234)</label>
       <input id="discordId" type="text" class="w-full p-3 rounded bg-black/40 border border-white/5 mb-3" placeholder="Enter your Discord ID" />
-      <button id="submitOrderBtn" class="w-full bg-ds-orange text-black font-bold py-2 rounded">Submit Order</button>
+      <button id="submitOrderBtn" class="w-full bg-gradient-to-r from-orange-600 to-yellow-500 text-black font-bold py-3 rounded hover:shadow-lg transition">Submit Order</button>
       <p class="text-xs text-gray-400 mt-2">Mods will review and deliver the vehicle in-game.</p>
     </div>
   </main>
+
+  <!-- Product Details Modal -->
+  <div id="productModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm hidden" onclick="if(event.target === this) closeModal()">
+    <div class="bg-zinc-900 p-6 rounded-xl border border-orange-500/20 max-w-5xl w-full mx-4 relative shadow-[0_0_50px_rgba(0,0,0,0.8)] flex flex-col md:flex-row gap-8 modal-animate">
+      <button onclick="closeModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white z-10 bg-black/50 rounded-full p-1 transition">
+        <i data-lucide="x" class="w-6 h-6"></i>
+      </button>
+      
+      <div class="w-full md:w-3/5">
+        <img id="modalImage" src="" alt="Vehicle" class="w-full h-auto max-h-[70vh] object-contain rounded-lg shadow-2xl border border-white/5 bg-black/50">
+      </div>
+      
+      <div class="w-full md:w-2/5 flex flex-col justify-center">
+        <img src="assets/logo ds.png" class="h-12 w-12 mb-4" alt="DS Logo">
+        <h2 id="modalName" class="text-4xl font-bold mb-4 text-white tracking-tight uppercase"></h2>
+        <p id="modalDesc" class="text-gray-300 mb-8 text-lg leading-relaxed"></p>
+        
+        <div class="mt-auto pt-6 border-t border-white/10">
+          <div class="flex items-center justify-between mb-6">
+            <span class="text-gray-400 text-lg">Price</span>
+            <span id="modalPrice" class="text-4xl font-bold text-yellow-500"></span>
+          </div>
+          <button id="modalOrderBtn" class="w-full py-4 bg-gradient-to-r from-orange-600 to-yellow-500 text-black font-bold rounded-lg hover:from-orange-500 hover:to-yellow-400 transition shadow-lg text-xl uppercase tracking-wide transform hover:scale-[1.02]">
+            Order Now
+          </button>
+          
+          <!-- In-Modal Order Form -->
+          <div id="modalOrderForm" class="hidden flex flex-col gap-3">
+            <label class="text-sm text-gray-400">Enter Discord ID to Order</label>
+            <input id="modalDiscordId" type="text" class="w-full p-3 rounded bg-black/40 border border-white/10 text-white focus:border-orange-500 outline-none transition" placeholder="username#1234" />
+            <div class="flex gap-3">
+              <button id="modalSubmitBtn" class="flex-1 py-3 bg-gradient-to-r from-orange-600 to-yellow-500 text-black font-bold rounded hover:shadow-lg transition">Confirm Order</button>
+              <button id="modalCancelBtn" class="px-4 py-3 bg-white/10 text-white font-bold rounded hover:bg-white/20 transition">Cancel</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </body>
 </html>
