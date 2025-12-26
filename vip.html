@@ -334,6 +334,10 @@
 
   document.addEventListener('DOMContentLoaded', () => {
     document.title = "SHOP";
+    // Visual URL cleanup for local testing and production
+    if (window.location.pathname.endsWith('vip.html')) {
+        window.history.replaceState(null, '', '/shop');
+    }
     // Attach event listener
     document.getElementById('submitOrderBtn').addEventListener('click', submitOrder);
     document.getElementById('modalSubmitBtn').addEventListener('click', submitModalOrder);

@@ -115,6 +115,10 @@
         // --- INIT ---
         window.onload = function() {
             document.title = "HOME";
+            // Visual URL cleanup for local testing and production
+            if (window.location.pathname.endsWith('index.html')) {
+                window.history.replaceState(null, '', '/home');
+            }
             const configStr = typeof __firebase_config !== 'undefined' ? __firebase_config : null;
             if (configStr) {
                 try {

@@ -1,0 +1,29 @@
+{
+  "hosting": {
+    "public": ".",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+
+    "rewrites": [
+      {
+        "source": "/shop",
+        "destination": "/vip.html"
+      },
+      {
+        "source": "/home",
+        "destination": "/index.html"
+      }
+    ],
+
+    "redirects": [
+      {
+        "source": "/vip.html",
+        "destination": "/shop",
+        "type": 301
+      }
+    ]
+  }
+}
